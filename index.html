@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0A0A0F">
+  <title>BuyTrip Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+
+<div id="screen-login" class="screen">
+  <div class="login-bg"></div>
+  <div class="login-content">
+    <div class="login-logo">
+      <div class="login-icon">🛒</div>
+      <h1>BUYTRIP<span>PRO</span></h1>
+    </div>
+    <div class="login-card">
+      <h2>Ingresar</h2>
+      <div class="field-group">
+        <label>Nombre / Usuario</label>
+        <input type="text" id="login-name" placeholder="Tu nombre...">
+      </div>
+      <div class="field-group">
+        <label>Código de Equipo</label>
+        <input type="text" id="login-team" placeholder="ej: TEAM2025" style="text-transform:uppercase">
+        <small>Comparte este código con tu equipo</small>
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    </div>
+    <div class="lang-toggle">
+      <button onclick="setLang('es')" id="btn-es" class="active">ES</button>
+      <button onclick="setLang('en')" id="btn-en">EN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+
+<div id="app" class="hidden">
+
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">BT<span>PRO</span></span>
+    </div>
+    <div class="topbar-center" id="topbar-title">Inicio</div>
+    <div class="topbar-right">
+      <div class="user-badge" id="user-badge">?</div>
+      <button class="sync-btn" id="sync-btn" onclick="syncData()">
+        <span class="sync-icon">⟳</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+
+  <div id="screen-home" class="page-screen active">
+    <div id="screen-home" class="page-screen active">
+    <div style="padding:16px">
+      <div class="home-header">
+        <div class="home-greeting" id="home-greeting">Hola,</div>
+        <div class="home-date" id="home-date"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-visits">0</div><div class="stat-label">Visitas</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-suppliers">0</div><div class="stat-label">Proveedores</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-products">0</div><div class="stat-label">Productos</div></div>
+      </div>
+      <div class="section-title">Acciones Rápidas</div>
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="navigate('visits')"><span class="quick-icon">📋</span><span>Visitas</span></button>
+        <button class="quick-btn" onclick="navigate('suppliers')"><span class="quick-icon">🏪</span><span>Proveedores</span></button>
+        <button class="quick-btn" onclick="navigate('products')"><span class="quick-icon">📦</span><span>Productos</span></button>
+        <button class="quick-btn export-btn" onclick="navigate('export')"><span class="quick-icon">📊</span><span>Exportar</span></button>
+      </div>
+      <div class="section-title">Últimos Productos</div>
+      <div id="recent-products-list" class="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- VISITS -->
+
+  <div id="screen-visits" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('home')">←</button>
+      <h2>Visitas</h2>
+      <button class="add-btn" onclick="showNewVisitModal()">+</button>
+    </div>
+    <div id="visits-list" class="list-container"></div>
+  </div>
+
+  <!-- SUPPLIERS -->
+
+  <div id="screen-suppliers" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('home')">←</button>
+      <h2>Proveedores</h2>
+      <button class="add-btn" onclick="showNewSupplierModal()">+</button>
+    </div>
+    <div class="filter-row">
+      <input type="text" class="search-input" placeholder="Buscar proveedor..." oninput="filterSuppliers(this.value)">
+    </div>
+    <div id="suppliers-list" class="list-container"></div>
+  </div>
+
+  <!-- SUPPLIER DETAIL -->
+
+  <div id="screen-supplier-detail" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('suppliers')">←</button>
+      <h2 id="supplier-detail-title">Proveedor</h2>
+      <button class="add-btn" onclick="addProductToCurrentSupplier()">📷</button>
+    </div>
+    <div id="supplier-detail-content"></div>
+  </div>
+
+  <!-- PRODUCTS -->
+
+  <div id="screen-products" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('home')">←</button>
+      <h2>Productos</h2>
+      <button class="add-btn" onclick="showProductCapture()">📷</button>
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" onchange="filterProducts(this.value)">
+        <option value="all">Todos</option>
+        <option value="approved">Aprobados</option>
+        <option value="pending">Pendientes</option>
+        <option value="high">Alta Prioridad</option>
+        <option value="discarded">Descartados</option>
+      </select>
+    </div>
+    <div id="products-list" class="list-container"></div>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
+
+  <div id="screen-product-detail" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('products')">←</button>
+      <h2>Producto</h2>
+      <button class="save-btn" onclick="saveCurrentProduct()">Guardar</button>
+    </div>
+    <div id="product-detail-content"></div>
+  </div>
+
+  <!-- EXPORT -->
+
+  <div id="screen-export" class="page-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navigate('home')">←</button>
+      <h2>Exportar Excel</h2>
+    </div>
+    <div id="export-content" class="export-container"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="navigate('home')" id="nav-home"><span class="nav-icon">🏠</span><span>Inicio</span></button>
+    <button class="nav-btn" onclick="navigate('visits')" id="nav-visits"><span class="nav-icon">📋</span><span>Visitas</span></button>
+    <button class="nav-btn" onclick="navigate('suppliers')" id="nav-suppliers"><span class="nav-icon">🏪</span><span>Proveedores</span></button>
+    <button class="nav-btn" onclick="navigate('products')" id="nav-products"><span class="nav-icon">📦</span><span>Productos</span></button>
+    <button class="nav-btn" onclick="navigate('export')" id="nav-export"><span class="nav-icon">📊</span><span>Exportar</span></button>
+  </div>
+
+</div>
+
+<!-- MODALS -->
+
+<div id="modal-visit" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header"><h3>Nueva Visita</h3><button class="modal-close" onclick="closeModal('modal-visit')">✕</button></div>
+    <div class="modal-body">
+      <div class="field-group"><label>Nombre de Visita</label><input type="text" id="v-name" placeholder="ej: Futian Day 1"></div>
+      <div class="field-group"><label>Ciudad</label>
+        <select id="v-city"><option>Guangzhou - Futian</option><option>Yiwu</option><option>Shenzhen</option><option>Shanghai</option><option>Otra</option></select>
+      </div>
+      <div class="field-group"><label>Mercado</label><input type="text" id="v-market" placeholder="ej: Futian Market Block A"></div>
+      <div class="field-group"><label>Notas</label><textarea id="v-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-visit')">Cancelar</button>
+      <button class="btn-primary" onclick="createVisit()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-supplier" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header"><h3>Nuevo Proveedor</h3><button class="modal-close" onclick="closeModal('modal-supplier')">✕</button></div>
+    <div class="modal-body">
+      <div class="photo-capture-area" onclick="captureSupplierCard()">
+        <div class="photo-capture-inner" id="supplier-card-preview">
+          <div class="photo-icon">📷</div>
+          <div>Foto de tarjeta del proveedor</div>
+          <small>La IA llenará los campos automáticamente</small>
+        </div>
+      </div>
+      <div id="supplier-ocr-status" class="ocr-status hidden"><div class="ocr-spinner"></div><span>Analizando tarjeta...</span></div>
+      <div class="field-group"><label>Nombre del Proveedor</label><input type="text" id="s-name" placeholder="Nombre..."></div>
+      <div class="field-group"><label>Stand / Ubicación</label><input type="text" id="s-booth" placeholder="ej: A3-245"></div>
+      <div class="field-group"><label>Contacto</label><input type="text" id="s-contact"></div>
+      <div class="field-group"><label>WeChat / WhatsApp</label><input type="text" id="s-wechat"></div>
+      <div class="field-group"><label>Categoría</label><input type="text" id="s-category"></div>
+      <div class="field-group"><label>Calificación</label>
+        <div class="star-rating" id="s-rating">
+          <span onclick="setRating(1)">⭐</span><span onclick="setRating(2)">⭐</span><span onclick="setRating(3)">⭐</span><span onclick="setRating(4)">⭐</span><span onclick="setRating(5)">⭐</span>
+        </div>
+        <input type="hidden" id="s-rating-val" value="0">
+      </div>
+      <div class="field-group"><label>Notas</label><textarea id="s-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-supplier')">Cancelar</button>
+      <button class="btn-primary" onclick="createSupplier()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-capture" class="modal-overlay hidden">
+  <div class="modal-card modal-fullscreen">
+    <div class="modal-header"><h3>Capturar Producto</h3><button class="modal-close" onclick="closeModal('modal-capture')">✕</button></div>
+    <div class="modal-body">
+      <div class="capture-guide"><div class="capture-guide-text">📸 1 Foto = 1 Producto. Incluye producto + todos los datos visibles</div></div>
+      <div class="photo-capture-area large" onclick="captureProductPhoto()">
+        <div class="photo-capture-inner" id="product-photo-preview">
+          <div class="photo-icon big">📷</div>
+          <div>Toca para tomar foto</div>
+        </div>
+      </div>
+      <div id="product-ocr-status" class="ocr-status hidden"><div class="ocr-spinner"></div><span>IA analizando imagen...</span></div>
+      <div class="field-group"><label>Proveedor</label><select id="p-supplier-select"></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-capture')">Cancelar</button>
+      <button class="btn-primary" id="btn-analyze" onclick="analyzeAndCreate()">Analizar y Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<input type="file" id="file-supplier-card" accept="image/*" capture="environment" style="display:none" onchange="handleSupplierCardFile(this)">
+<input type="file" id="file-product-photo" accept="image/*" capture="environment" style="display:none" onchange="handleProductPhotoFile(this)">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="app.js"></script>
+
+</body>
+</html>
